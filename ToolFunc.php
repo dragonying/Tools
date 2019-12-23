@@ -2044,7 +2044,8 @@ function imgToBase64($img_file) {
         if ($fp) {
             $filesize = filesize($app_img_file);
             $content = fread($fp, $filesize);
-            $file_content = chunk_split(base64_encode($content)); // base64编码
+//            $file_content = chunk_split(base64_encode($content)); // base64编码
+            $file_content = base64_encode($content);
             switch ($img_info[2]) {           //判读图片类型
                 case 1: $img_type = "gif";
                     break;
