@@ -6,6 +6,8 @@
  * and open the template in the editor.
  */
 
+use caibeitv\helpers\Check;
+
 /**
  * 生成六位的随机码
  * @param type $length
@@ -1612,8 +1614,9 @@ function sendSiteNews($userID, $type = "", $data = [], $remark = "")
  * @param array $post_data
  * @return bool|string
  */
-function curlSubmit($url, $method = 'get', $post_data=[])
-{echo $url.PHP_EOL;
+function curlSubmit($url, $method = 'get', $post_data = [])
+{
+    echo $url . PHP_EOL;
     $method = strtoupper($method);
     $ch = curl_init();
     //设置选项，包括URL
@@ -1627,15 +1630,17 @@ function curlSubmit($url, $method = 'get', $post_data=[])
         curl_setopt($ch, CURLOPT_POST, 1);
         // post的变量
         curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 'Content-Type: application/json',
-                'Content-Length: ' . strlen($post_data))
+                'Content-Length: ' . strlen($post_data)
+            ]
         );
     }
 
     $output = curl_exec($ch);
     curl_close($ch);
     var_dump($output);
+
     return $output;
 }
 
@@ -2032,26 +2037,30 @@ function cpLog($log_content, $item = "Wge")
  * @param $img_file
  * @return string
  */
-function imgToBase64($img_file) {
+function imgToBase64($img_file)
+{
 
     $img_base64 = '';
-    if (file_exists($img_file)) {
+    if (file_exists($img_file)){
         $app_img_file = $img_file; // 图片路径
         $img_info = getimagesize($app_img_file); // 取得图片的大小，类型等
 
         $fp = fopen($app_img_file, "r"); // 图片是否可读权限
 
-        if ($fp) {
+        if ($fp){
             $filesize = filesize($app_img_file);
             $content = fread($fp, $filesize);
-//            $file_content = chunk_split(base64_encode($content)); // base64编码
+            //            $file_content = chunk_split(base64_encode($content)); // base64编码
             $file_content = base64_encode($content);
-            switch ($img_info[2]) {           //判读图片类型
-                case 1: $img_type = "gif";
+            switch($img_info[2]){           //判读图片类型
+                case 1:
+                    $img_type = "gif";
                     break;
-                case 2: $img_type = "jpg";
+                case 2:
+                    $img_type = "jpg";
                     break;
-                case 3: $img_type = "png";
+                case 3:
+                    $img_type = "png";
                     break;
             }
 
@@ -2106,4 +2115,168 @@ function curlData($url, $data, $method = 'GET', $header = [])
     curl_close($ch); //释放curl句柄
 
     return $output;
+}
+
+
+/**
+ * 格式化百分比
+ */
+function formatTatio($leftOperand, $rightPperand, $precision = 2)
+{
+    if (0 >= $rightPperand){
+        $value = 0;
+    }else{
+        $value = $leftOperand / $rightPperand;
+    }
+
+    $min = 0;
+    $max = 1;
+
+    $value = $value >= $max ? $max : $value;
+    $value = $value >= $min ? $value : $min;
+
+    return strval(round($value * 100, $precision));
+}
+
+
+/**
+ * 格式化百分比、不四舍五入
+ */
+function formatPercent($leftOperand, $rightPperand)
+{
+    if (0 >= $rightPperand){
+        $value = 0;
+    }else{
+        $value = $leftOperand / $rightPperand;
+    }
+
+    $min = 0;
+    $max = 1;
+
+    $value = $value >= $max ? $max : $value;
+    $value = $value >= $min ? $value : $min;
+
+    return floor($value * 100 * 100) / 100;
+}
+
+
+/**
+ * 时间戳转日期
+ * @param $time
+ * @param string $format
+ * @return false|string
+ */
+function timeToStr($time, $format = 'Y-m-d H:i:s')
+{
+    return $time <= 0 ? '' : date($format, $time);
+}
+
+function asBeforeDate($value)
+{
+    if (empty($value)){
+        return '';
+    }
+
+    $now = time();
+
+    //一个小时内
+    if (abs($value - $now) < 60){
+        return sprintf('%s秒钟前', abs(intval($value) - intval($now)));
+    }
+
+    //一个小时内
+    if (abs($value - $now) < 60 * 60){
+        return sprintf('%s分钟前', abs(intval($value / 60) - intval($now / 60)));
+    }
+
+    //今天
+    if (abs($value - $now) < 24 * 60 * 60){
+        return sprintf('%s小时前', ceil(abs($value - $now) / 60 / 60));
+    }
+
+    //一周内的
+    if (abs($value - $now) < 24 * 60 * 60 * 7){
+        return sprintf('%s天前', ceil(abs($value - $now) / 60 / 60 / 24));
+    }
+
+    //五周内的
+    if (abs($value - $now) < 24 * 60 * 60 * 7 * 4){
+        return sprintf('%s周前', ceil(abs($value - $now) / 60 / 60 / 24 / 7));
+    }
+
+    //一年内的
+    if (abs($value - $now) < 24 * 60 * 60 * 360){
+        return sprintf('%s月前', ceil(abs($value - $now) / 60 / 60 / 24 / 30));
+    }
+
+    return sprintf('%s年前', ceil(abs($value - $now) / 60 / 60 / 24 / 365));
+}
+
+function asLiveStartDate($value)
+{
+    if (empty($value)){
+        return '';
+    }
+
+    $now = time();
+
+    //一个小时内
+    if (abs($value - $now) < 60 * 60){
+        return sprintf('%s分钟后', abs(intval($value / 60) - intval($now / 60)));
+    }
+
+    if (abs($value - $now) < 24 * 60 * 60){
+        return sprintf('%s小时后', ceil(abs($value - $now) / 60 / 60));
+    }
+
+    //明天或者以后的
+    return sprintf('%s天后',
+        ceil((strtotime(date('Y-m-d ', $value) . date('H:i:s', $value)) - $now) / (24 * 60 * 60)));
+}
+
+/**
+ * 格式化价格
+ * @param int $price
+ * @param int $precision
+ * @return float
+ */
+function formatPrice($price = 0, $precision = 2)
+{
+    if ($price == 0){
+        return $price;
+    }
+
+    return sprintf("%.2f", round($price / 100, $precision));
+}
+
+function IntToChr($key, $start = 65)
+{
+    $str = '';
+    if (floor($key / 26) > 0){
+        $str .= self::IntToChr(floor($key / 26) - 1);
+    }
+
+    return $str . chr($key % 26 + $start);
+}
+
+function hideMobile($mobile)
+{
+    if (Check::isMobile($mobile)){
+        return mb_substr($mobile, 0, 3) . '****' . mb_substr($mobile, 7);
+    }else{
+        return '--';
+    }
+}
+
+function isJsonArray($str = null)
+{
+    if (is_null($str)){
+        return false;
+    }
+
+    if (!is_string($str)){
+        return false;
+    }
+
+    return is_array(json_decode_P($str));
 }
